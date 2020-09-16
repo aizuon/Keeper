@@ -16,8 +16,8 @@
 CREATE DATABASE IF NOT EXISTS `keeper` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `keeper`;
 
--- Dumping structure for table keeper.passwords
-CREATE TABLE IF NOT EXISTS `passwords` (
+-- Dumping structure for table keeper.accounts
+CREATE TABLE IF NOT EXISTS `accounts` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `account` varchar(50) NOT NULL,

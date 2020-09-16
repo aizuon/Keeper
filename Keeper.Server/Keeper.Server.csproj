@@ -5,11 +5,32 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <NoWarn>CA2007;CS1998;CA1028;CA1031;CA1032;CA1040;CA1051;CA1062;CA1303;CA1304;CA1305;CA1307;CA1707;CA1710;CA1716;CA1720;CA1815;CA1819;CA2208;CA2211;CA2214;CA2225;CS0162;CS0660;CS0661;NU1701</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>CA2007;CS1998;CA1028;CA1031;CA1032;CA1040;CA1051;CA1062;CA1303;CA1304;CA1305;CA1307;CA1707;CA1710;CA1716;CA1720;CA1815;CA1819;CA2208;CA2211;CA2214;CA2225;CS0162;CS0660;CS0661;NU1701</NoWarn>
+    <DefineConstants></DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.0" />
     <PackageReference Include="Dapper.FastCrud" Version="2.5.0.39" />
     <PackageReference Include="Hjson" Version="3.0.0" />
     <PackageReference Include="LiteNetLib" Version="0.9.3.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="3.1.8" />
+    <PackageReference Include="MySql.Data" Version="8.0.21" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="Serilog.Sinks.Async" Version="1.4.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
   </ItemGroup>
 
   <ItemGroup>
