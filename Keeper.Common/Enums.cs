@@ -1,13 +1,15 @@
 ﻿namespace Keeper.Common
 {
-    public enum Opcode : byte
+    public enum LoginResult : byte
     {
-        S2CConnectionHint,
-        C2SKeyExchange,
-        S2CKeyExchangeSuccess,
-        LoginReq,
-        LoginAck,
-        RegisterReq,
-        RegisterAck
+        Success,
+        WrongPassword,
+        UsernameDoesntExist
+    }
+
+    public enum RegisterResult : byte
+    {
+        Success,
+        UsernameTaken
     }
 }

@@ -36,6 +36,7 @@
             this.close = new System.Windows.Forms.Button();
             this.registerLabel = new System.Windows.Forms.Label();
             this.register = new System.Windows.Forms.Button();
+            this.errorLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // id
@@ -106,11 +107,22 @@
             this.register.Text = "Register";
             this.register.UseVisualStyleBackColor = true;
             // 
+            // errorLabel
+            // 
+            this.errorLabel.AutoSize = true;
+            this.errorLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.errorLabel.Location = new System.Drawing.Point(190, 195);
+            this.errorLabel.Name = "errorLabel";
+            this.errorLabel.Size = new System.Drawing.Size(0, 13);
+            this.errorLabel.TabIndex = 8;
+            this.errorLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // LoginForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(400, 300);
+            this.Controls.Add(this.errorLabel);
             this.Controls.Add(this.register);
             this.Controls.Add(this.registerLabel);
             this.Controls.Add(this.close);
@@ -137,6 +149,7 @@
         private System.Windows.Forms.Button close;
         private System.Windows.Forms.Label registerLabel;
         private System.Windows.Forms.Button register;
+        private System.Windows.Forms.Label errorLabel;
     }
 }
 

@@ -1,15 +1,22 @@
-﻿using Keeper.Common;
+﻿using Dapper.FastCrud;
+using Keeper.Common;
+using Keeper.Server.Database;
+using Keeper.Server.Database.Models;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 
 namespace Keeper.Server
 {
+    using BCrypt.Net;
+    using Org.BouncyCastle.Asn1;
+
     public class Server : IDisposable
     {
         public static Server Instance { get; private set; }
@@ -66,25 +73,28 @@ namespace Keeper.Server
 
         private void Listener_NetworkReceiveEvent(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
         {
-            if (!_sessions.TryGetValue(peer.Id, out var sender))
+            if (!_sessions.TryGetValue(peer.Id, out var session))
                 return;
 
-            lock (sender._recvLock)
+            lock (session._recvLock)
             {
                 try
                 {
-                    var opcode = (Opcode)reader.GetByte();
-                    bool encrypt = reader.GetBool();
+                    if (!reader.TryGetByte(out byte opcodeByte) || !reader.TryGetBool(out bool encrypt))
+                        return;
+
+                    var opcode = (Opcode)opcodeByte;
+
                     byte[] data = reader.GetRemainingBytes();
 
                     if (encrypt)
                     {
-                        if (sender.Crypt == null)
+                        if (session.Crypt == null)
                             return;
-                        data = sender.Crypt.Decrypt(data);
+                        data = session.Crypt.Decrypt(data);
                     }
 
-                    Handle(sender, opcode, new NetDataReader(data));
+                    Handle(session, opcode, new NetDataReader(data));
                 }
                 catch (Exception ex)
                 {
@@ -94,9 +104,113 @@ namespace Keeper.Server
             }
         }
 
-        private void Handle(Session sender, Opcode opcode, NetDataReader data)
+        private void Handle(Session session, Opcode opcode, NetDataReader data)
         {
-            //TODO
+            Logger.Debug("Recieved {0} from {1}", opcode, session.PeerId);
+
+            switch (opcode)
+            {
+                case Opcode.C2SKeyExchange:
+                {
+                    if (!data.TryGetBytesWithLength(out byte[] key) || !data.TryGetULong(out ulong nonce))
+                        return;
+
+                    Handle_C2SKeyExchange(session, key, nonce);
+
+                    break;
+                }
+
+                case Opcode.LoginReq:
+                {
+                    if (!data.TryGetString(out string username) || !data.TryGetString(out string hashedPassword) || !data.TryGetBytesWithLength(out byte[] encodedPublicKey))
+                        return;
+
+                    Handle_LoginReq(session, username, hashedPassword, encodedPublicKey);
+                    break;
+                }
+
+                case Opcode.RegisterReq:
+                {
+                    if (!data.TryGetString(out string username) || !data.TryGetString(out string hashedPassword))
+                        return;
+
+                    Handle_RegisterReq(session, username, hashedPassword);
+                    break;
+                }
+            }
+        }
+
+        private void Handle_C2SKeyExchange(Session session, byte[] key, ulong nonce)
+        {
+            try
+            {
+                byte[] decryptedKey = RSA.Decrypt(key, true);
+                session.Crypt = new Crypt(decryptedKey, nonce);
+            }
+            catch (Exception)
+            {
+                session.Dispose();
+                return;
+            }
+
+            session.Send_S2CKeyExchangeSuccess();
+        }
+
+        private void Handle_LoginReq(Session session, string username, string hashedPassword, byte[] encodedPublicKey)
+        {
+            using (var db = DB.Open())
+            {
+                var user = db.Find<UserDto>(statement => statement
+                        .Where($"{nameof(UserDto.username):C} = @username")
+                        .Include<AccountDto>(join => join.LeftOuterJoin())
+                        .WithParameters(new { username })).FirstOrDefault();
+
+                if (user == null)
+                {
+                    session.Send_LoginAck(LoginResult.UsernameDoesntExist);
+                    return;
+                }
+
+                if (!BCrypt.Verify(hashedPassword, user.password))
+                {
+                    Logger.Information("Wrong password for {0} from {1}", username, session.Peer.EndPoint);
+                    session.Send_LoginAck(LoginResult.WrongPassword);
+                    return;
+                }
+
+                var sequence = (DerSequence)Asn1Object.FromByteArray(encodedPublicKey);
+                byte[] modulus = ((DerInteger)sequence[0]).Value.ToByteArrayUnsigned();
+                byte[] exponent = ((DerInteger)sequence[1]).Value.ToByteArrayUnsigned();
+                var publicKey = new RSAParameters { Exponent = exponent, Modulus = modulus };
+                session.RSA = new RSACryptoServiceProvider();
+                session.RSA.ImportParameters(publicKey);
+
+                var accounts = user.Accounts.Select(a => new AccountInfo(a.account, a.account_id, a.account_password));
+                session.Send_LoginAck(LoginResult.Success, accounts);
+            }
+        }
+
+        private void Handle_RegisterReq(Session session, string username, string hashedPassword)
+        {
+            using (var db = DB.Open())
+            {
+                var user = db.Find<UserDto>(statement => statement
+                        .Where($"{nameof(UserDto.username):C} = @username")
+                        .Include<AccountDto>(join => join.LeftOuterJoin())
+                        .WithParameters(new { username })).FirstOrDefault();
+
+                if (user != null)
+                {
+                    session.Send_RegisterAck(RegisterResult.UsernameTaken);
+                    return;
+                }
+
+                user = new UserDto { username = username };
+
+                user.password = BCrypt.HashPassword(hashedPassword, 10);
+
+                session.Send_RegisterAck(RegisterResult.Success);
+            }
         }
 
         public static void Initialize()

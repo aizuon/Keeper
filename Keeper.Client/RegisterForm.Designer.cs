@@ -36,6 +36,7 @@
             this.passwordRepeat = new System.Windows.Forms.TextBox();
             this.cancel = new System.Windows.Forms.Button();
             this.register = new System.Windows.Forms.Button();
+            this.errorLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // passwordLabel
@@ -104,11 +105,21 @@
             this.register.Text = "Register";
             this.register.UseVisualStyleBackColor = true;
             // 
+            // errorLabel
+            // 
+            this.errorLabel.AutoSize = true;
+            this.errorLabel.Location = new System.Drawing.Point(200, 254);
+            this.errorLabel.Name = "errorLabel";
+            this.errorLabel.Size = new System.Drawing.Size(0, 13);
+            this.errorLabel.TabIndex = 12;
+            this.errorLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // RegisterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(400, 300);
+            this.Controls.Add(this.errorLabel);
             this.Controls.Add(this.cancel);
             this.Controls.Add(this.register);
             this.Controls.Add(this.passwordRepeat);
@@ -135,5 +146,6 @@
         private System.Windows.Forms.TextBox passwordRepeat;
         private System.Windows.Forms.Button cancel;
         private System.Windows.Forms.Button register;
+        private System.Windows.Forms.Label errorLabel;
     }
 }

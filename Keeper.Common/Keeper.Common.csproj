@@ -59,9 +59,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccountInfo.cs" />
     <Compile Include="Crypt.cs" />
     <Compile Include="Enrichers\ContextEnricher.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Opcodes.cs" />
     <Compile Include="Events.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RSAHelper.cs" />

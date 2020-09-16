@@ -2,6 +2,9 @@
 using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
 
 namespace Keeper.Server
 {
@@ -11,6 +14,7 @@ namespace Keeper.Server
         private readonly Server owner;
 
         public Crypt Crypt;
+        public RSACryptoServiceProvider RSA;
 
         public int PeerId => Peer.Id;
         public bool IsConnected => Peer.ConnectionState.HasFlag(ConnectionState.Connected);
@@ -27,7 +31,49 @@ namespace Keeper.Server
             this.owner = owner;
         }
 
-        public void Send(Opcode opcode, NetDataWriter message, bool encrypt = true, DeliveryMethod method = DeliveryMethod.ReliableOrdered)
+        public void Send_S2CKeyExchangeSuccess()
+        {
+            var message = new NetDataWriter();
+
+            Send(Opcode.S2CKeyExchangeSuccess, message, false);
+        }
+
+        public void Send_LoginAck(LoginResult result)
+        {
+            var message = new NetDataWriter();
+
+            message.Put((byte)result);
+            message.Put(0);
+
+            Send(Opcode.LoginAck, message);
+        }
+
+        public void Send_LoginAck(LoginResult result, IEnumerable<AccountInfo> accounts)
+        {
+            var message = new NetDataWriter();
+
+            message.Put((byte)result);
+            message.Put(accounts.Count());
+            foreach (var account in accounts)
+            {
+                message.Put(account.Name);
+                message.Put(account.ID);
+                message.Put(account.Password);
+            }
+
+            Send(Opcode.LoginAck, message);
+        }
+
+        public void Send_RegisterAck(RegisterResult result)
+        {
+            var message = new NetDataWriter();
+
+            message.Put((byte)result);
+
+            Send(Opcode.RegisterAck, message);
+        }
+
+        private void Send(Opcode opcode, NetDataWriter message, bool encrypt = true, DeliveryMethod method = DeliveryMethod.ReliableOrdered)
         {
             if (_disposed || !IsConnected)
                 return;
@@ -36,7 +82,7 @@ namespace Keeper.Server
             {
                 try
                 {
-                    owner.Logger.Verbose("Sending {0} to {1}", opcode, PeerId);
+                    owner.Logger.Debug("Sending {0} to {1}", opcode, PeerId);
 
                     byte[] data;
                     if (encrypt)
@@ -74,6 +120,9 @@ namespace Keeper.Server
 
             if (IsConnected)
                 Peer.Disconnect();
+
+            RSA?.Dispose();
+            RSA = null;
         }
     }
 }
