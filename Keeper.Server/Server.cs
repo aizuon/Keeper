@@ -4,7 +4,6 @@ using Keeper.Server.Database;
 using Keeper.Server.Database.Models;
 using LiteNetLib;
 using LiteNetLib.Utils;
-using Org.BouncyCastle.Asn1;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
@@ -144,10 +143,10 @@ namespace Keeper.Server
 
                 case Opcode.LoginReq:
                 {
-                    if (!data.TryGetString(out string username) || !data.TryGetString(out string hashedPassword) || !data.TryGetBytesWithLength(out byte[] encodedPublicKey))
+                    if (!data.TryGetString(out string username) || !data.TryGetString(out string hashedPassword))
                         return;
 
-                    Handle_LoginReq(session, username, hashedPassword, encodedPublicKey);
+                    Handle_LoginReq(session, username, hashedPassword);
                     break;
                 }
 
@@ -197,7 +196,7 @@ namespace Keeper.Server
             session.Send_S2CKeyExchangeSuccess();
         }
 
-        private void Handle_LoginReq(Session session, string username, string hashedPassword, byte[] encodedPublicKey)
+        private void Handle_LoginReq(Session session, string username, string hashedPassword)
         {
             using (var db = DB.Open())
             {
@@ -218,13 +217,6 @@ namespace Keeper.Server
                     session.Send_LoginAck(LoginResult.WrongPassword);
                     return;
                 }
-
-                var sequence = (DerSequence)Asn1Object.FromByteArray(encodedPublicKey);
-                byte[] modulus = ((DerInteger)sequence[0]).Value.ToByteArrayUnsigned();
-                byte[] exponent = ((DerInteger)sequence[1]).Value.ToByteArrayUnsigned();
-                var publicKey = new RSAParameters { Exponent = exponent, Modulus = modulus };
-                session.RSA = new RSACryptoServiceProvider();
-                session.RSA.ImportParameters(publicKey);
 
                 session.UserId = user.id;
 

@@ -16,7 +16,6 @@ namespace Keeper.Server
         public uint UserId;
 
         public Crypt Crypt;
-        public RSACryptoServiceProvider RSA;
 
         public int PeerId => Peer.Id;
         public bool IsConnected => Peer.ConnectionState.HasFlag(ConnectionState.Connected);
@@ -140,9 +139,6 @@ namespace Keeper.Server
 
             if (IsConnected)
                 Peer.Disconnect();
-
-            RSA?.Dispose();
-            RSA = null;
         }
     }
 }

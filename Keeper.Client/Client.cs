@@ -4,9 +4,11 @@ using LiteNetLib.Utils;
 using Serilog;
 using Serilog.Core;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Keeper.Client
 {
@@ -126,8 +128,153 @@ namespace Keeper.Client
 
             switch (opcode)
             {
-                //TODO
+                case Opcode.S2CKeyExchangeSuccess:
+                {
+                    Handle_S2CKeyExchangeSuccess();
+                    break;
+                }
+
+                case Opcode.LoginAck:
+                {
+                    if (!data.TryGetByte(out byte resultByte) || !data.TryGetInt(out int accountCount))
+                        return;
+
+                    var result = (LoginResult)resultByte;
+
+                    var accounts = new List<AccountInfo>(accountCount);
+                    for (int i = 0; i < accountCount; i++)
+                    {
+                        if (!data.TryGetString(out string accountName) || !data.TryGetString(out string accountId) || !data.TryGetBytesWithLength(out byte[] encodedPassword))
+                            return;
+
+                        string password = Encoding.UTF8.GetString(RSA_Password.Decrypt(encodedPassword, true));
+
+                        accounts.Add(new AccountInfo(accountName, accountId, password));
+                    }
+
+                    Handle_LoginAck(result, accounts);
+                    break;
+                }
+
+                case Opcode.RegisterAck:
+                {
+                    if (!data.TryGetByte(out byte resultByte))
+                        return;
+
+                    var result = (RegisterResult)resultByte;
+
+                    Handle_RegisterAck(result);
+                    break;
+                }
+
+                case Opcode.AccountAddAck:
+                {
+                    if (!data.TryGetUInt(out uint accountId))
+                        return;
+
+                    Handle_AccountAddAck(accountId);
+                    break;
+                }
+
+                case Opcode.AccountEditAck:
+                {
+                    if (!data.TryGetByte(out byte resultByte))
+                        return;
+
+                    var result = (AccountEditResult)resultByte;
+
+                    Handle_AccountEditAck(result);
+                    break;
+                }
             }
+        }
+
+        private void Handle_S2CKeyExchangeSuccess()
+        {
+            //TODO
+        }
+
+        private void Handle_LoginAck(LoginResult result, List<AccountInfo> accounts)
+        {
+            //TODO
+        }
+
+        private void Handle_RegisterAck(RegisterResult result)
+        {
+            //TODO
+        }
+
+        private void Handle_AccountAddAck(uint accountId)
+        {
+            //TODO
+        }
+
+        private void Handle_AccountEditAck(AccountEditResult result)
+        {
+            //TODO
+        }
+
+        public void Send_C2SKeyExchange()
+        {
+            var message = new NetDataWriter();
+
+            message.PutBytesWithLength(Crypt.GetKey());
+            message.Put(Crypt.GetNonce());
+
+            Send(Opcode.C2SKeyExchange, message, false);
+        }
+
+        public void Send_LoginReq(string username, string password)
+        {
+            var message = new NetDataWriter();
+
+            message.Put(username);
+            using (var sha384 = new SHA384CryptoServiceProvider())
+            {
+                byte[] hashedPassword = sha384.ComputeHash(Encoding.UTF8.GetBytes(password));
+                message.Put(Convert.ToBase64String(hashedPassword));
+            }
+
+            Send(Opcode.LoginReq, message);
+        }
+
+        public void Send_RegisterReq(string username, string password)
+        {
+            var message = new NetDataWriter();
+
+            message.Put(username);
+            using (var sha384 = new SHA384CryptoServiceProvider())
+            {
+                byte[] hashedPassword = sha384.ComputeHash(Encoding.UTF8.GetBytes(password));
+                message.Put(Convert.ToBase64String(hashedPassword));
+            }
+
+            Send(Opcode.RegisterReq, message);
+        }
+
+        public void Send_AccountAddReq(string accountName, string accountId, string password)
+        {
+            var message = new NetDataWriter();
+
+            message.Put(accountName);
+            message.Put(accountId);
+            byte[] encodedPassword = RSA_Password.Encrypt(Encoding.UTF8.GetBytes(password), true);
+            message.PutBytesWithLength(encodedPassword);
+
+            Send(Opcode.AccountAddReq, message);
+        }
+
+        public void Send_AccountEditReq(uint id, string accountName, string accountId, string password)
+        {
+            var message = new NetDataWriter();
+
+            message.Put(id);
+            message.Put(accountName);
+            message.Put(accountId);
+            byte[] encodedPassword = RSA_Password.Encrypt(Encoding.UTF8.GetBytes(password), true);
+            message.PutBytesWithLength(encodedPassword);
+
+            Send(Opcode.AccountEditReq, message);
         }
 
         private void Send(Opcode opcode, NetDataWriter message, bool encrypt = true, DeliveryMethod method = DeliveryMethod.ReliableOrdered)
