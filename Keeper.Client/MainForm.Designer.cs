@@ -170,8 +170,10 @@
             this.Controls.Add(this.close);
             this.Controls.Add(this.welcomeLabel);
             this.Controls.Add(this.accounts);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "MainForm";
             this.Text = "Keeper";
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseDown);
             this.ResumeLayout(false);
             this.PerformLayout();
 

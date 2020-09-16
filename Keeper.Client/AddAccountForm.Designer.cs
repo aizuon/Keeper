@@ -210,6 +210,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "AddAccountForm";
             this.Text = "AddAccountForm";
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.AddAccountForm_MouseDown);
             this.ResumeLayout(false);
             this.PerformLayout();
 
