@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using Keeper.Common;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Net;
 using System.Windows.Forms;
 
@@ -45,9 +47,33 @@ namespace Keeper.Client
 
         private async void login_Click(object sender, System.EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(id.Text))
+            {
+                SetErrorLabel("ID can't be empty.");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(password.Text))
+            {
+                SetErrorLabel("Password can't be empty.");
+                return;
+            }
+
             await Client.Instance.Connect(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1337));
             await Client.Instance.KeyExchangeEvent.WaitAsync();
             Client.Instance.Send_LoginReq(id.Text, password.Text);
+        }
+
+        public void MoveToMainForm(List<AccountInfo> accounts)
+        {
+            Hide();
+            using (var mainForm = new MainForm(id.Text, accounts))
+            {
+                mainForm.ShowDialog(this);
+            }
+            if (!IsDisposed)
+            {
+                Show();
+            }
         }
     }
 }

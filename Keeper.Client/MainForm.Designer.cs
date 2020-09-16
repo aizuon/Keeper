@@ -41,16 +41,24 @@
             this.passwordLabel = new System.Windows.Forms.Label();
             this.save = new System.Windows.Forms.Button();
             this.addNew = new System.Windows.Forms.Button();
+            this.accountColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.idColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SuspendLayout();
             // 
             // accounts
             // 
+            this.accounts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.accountColumn,
+            this.idColumn});
             this.accounts.HideSelection = false;
             this.accounts.Location = new System.Drawing.Point(12, 81);
+            this.accounts.MultiSelect = false;
             this.accounts.Name = "accounts";
             this.accounts.Size = new System.Drawing.Size(360, 333);
             this.accounts.TabIndex = 0;
             this.accounts.UseCompatibleStateImageBehavior = false;
+            this.accounts.View = System.Windows.Forms.View.Details;
+            this.accounts.SelectedIndexChanged += new System.EventHandler(this.accounts_SelectedIndexChanged);
             // 
             // welcomeLabel
             // 
@@ -69,6 +77,7 @@
             this.close.TabIndex = 2;
             this.close.Text = "Close";
             this.close.UseVisualStyleBackColor = true;
+            this.close.Click += new System.EventHandler(this.close_Click);
             // 
             // logout
             // 
@@ -78,6 +87,7 @@
             this.logout.TabIndex = 3;
             this.logout.Text = "Logout";
             this.logout.UseVisualStyleBackColor = true;
+            this.logout.Click += new System.EventHandler(this.logout_Click);
             // 
             // search
             // 
@@ -85,6 +95,7 @@
             this.search.Name = "search";
             this.search.Size = new System.Drawing.Size(360, 20);
             this.search.TabIndex = 4;
+            this.search.TextChanged += new System.EventHandler(this.search_TextChanged);
             // 
             // account
             // 
@@ -151,6 +162,17 @@
             this.addNew.TabIndex = 12;
             this.addNew.Text = "Add New";
             this.addNew.UseVisualStyleBackColor = true;
+            this.addNew.Click += new System.EventHandler(this.addNew_Click);
+            // 
+            // accountColumn
+            // 
+            this.accountColumn.Text = "Account";
+            this.accountColumn.Width = 180;
+            // 
+            // idColumn
+            // 
+            this.idColumn.Text = "Id";
+            this.idColumn.Width = 175;
             // 
             // MainForm
             // 
@@ -194,5 +216,7 @@
         private System.Windows.Forms.Label passwordLabel;
         private System.Windows.Forms.Button save;
         private System.Windows.Forms.Button addNew;
+        private System.Windows.Forms.ColumnHeader accountColumn;
+        private System.Windows.Forms.ColumnHeader idColumn;
     }
 }

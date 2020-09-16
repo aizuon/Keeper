@@ -10,6 +10,7 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Keeper.Client
@@ -82,6 +83,7 @@ namespace Keeper.Client
         public async Task Connect(IPEndPoint endPoint)
         {
             Crypt = new Crypt();
+            _client.Start();
             _client.Connect(endPoint, "Keeper/TEST");
 
             Logger.Information("Connecting to server", endPoint);
@@ -209,7 +211,11 @@ namespace Keeper.Client
                 case LoginResult.Success:
                 {
                     Accounts = accounts;
-                    //TODO: move to main form
+                    var formThread = new Thread(() => LoginForm.Instance?.Invoke(new Action(() => LoginForm.Instance.MoveToMainForm(Accounts))))
+                    {
+                        IsBackground = true
+                    };
+                    formThread.Start();
                     break;
                 }
 
@@ -355,6 +361,12 @@ namespace Keeper.Client
                     return;
                 }
             }
+        }
+
+        public void Disconnect()
+        {
+            if (IsConnected)
+                _client.Stop();
         }
 
         public void Dispose()

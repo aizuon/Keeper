@@ -35,7 +35,6 @@
             this.password = new System.Windows.Forms.TextBox();
             this.passwordLabel = new System.Windows.Forms.Label();
             this.passwordGeneratorOptionsLabel = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
             this.passwordLength = new System.Windows.Forms.Label();
             this.includeSymbols = new System.Windows.Forms.CheckBox();
             this.includeLowercaseCharacters = new System.Windows.Forms.CheckBox();
@@ -44,6 +43,8 @@
             this.save = new System.Windows.Forms.Button();
             this.cancel = new System.Windows.Forms.Button();
             this.generatePassword = new System.Windows.Forms.Button();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.errorLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // account
@@ -103,13 +104,6 @@
             this.passwordGeneratorOptionsLabel.TabIndex = 6;
             this.passwordGeneratorOptionsLabel.Text = "Password Generator Options";
             // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(34, 206);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 20);
-            this.textBox1.TabIndex = 8;
-            // 
             // passwordLength
             // 
             this.passwordLength.AutoSize = true;
@@ -167,6 +161,7 @@
             this.save.TabIndex = 14;
             this.save.Text = "Save";
             this.save.UseVisualStyleBackColor = true;
+            this.save.Click += new System.EventHandler(this.save_Click);
             // 
             // cancel
             // 
@@ -176,6 +171,7 @@
             this.cancel.TabIndex = 15;
             this.cancel.Text = "Cancel";
             this.cancel.UseVisualStyleBackColor = true;
+            this.cancel.Click += new System.EventHandler(this.cancel_Click);
             // 
             // generatePassword
             // 
@@ -186,11 +182,41 @@
             this.generatePassword.Text = "Generate";
             this.generatePassword.UseVisualStyleBackColor = true;
             // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Items.AddRange(new object[] {
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"});
+            this.comboBox1.Location = new System.Drawing.Point(34, 206);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(86, 21);
+            this.comboBox1.TabIndex = 17;
+            // 
+            // errorLabel
+            // 
+            this.errorLabel.Location = new System.Drawing.Point(94, 328);
+            this.errorLabel.Name = "errorLabel";
+            this.errorLabel.Size = new System.Drawing.Size(200, 13);
+            this.errorLabel.TabIndex = 18;
+            this.errorLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // AddAccountForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(400, 350);
+            this.Controls.Add(this.errorLabel);
+            this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.generatePassword);
             this.Controls.Add(this.cancel);
             this.Controls.Add(this.save);
@@ -199,7 +225,6 @@
             this.Controls.Add(this.includeLowercaseCharacters);
             this.Controls.Add(this.includeSymbols);
             this.Controls.Add(this.passwordLength);
-            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.passwordGeneratorOptionsLabel);
             this.Controls.Add(this.passwordLabel);
             this.Controls.Add(this.password);
@@ -225,7 +250,6 @@
         private System.Windows.Forms.TextBox password;
         private System.Windows.Forms.Label passwordLabel;
         private System.Windows.Forms.Label passwordGeneratorOptionsLabel;
-        private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label passwordLength;
         private System.Windows.Forms.CheckBox includeSymbols;
         private System.Windows.Forms.CheckBox includeLowercaseCharacters;
@@ -234,5 +258,7 @@
         private System.Windows.Forms.Button save;
         private System.Windows.Forms.Button cancel;
         private System.Windows.Forms.Button generatePassword;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Label errorLabel;
     }
 }

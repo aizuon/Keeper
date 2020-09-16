@@ -45,12 +45,12 @@ namespace Keeper.Client
 
         private async void register_Click(object sender, System.EventArgs e)
         {
-            if (id.Text.Length < 4)
+            if (string.IsNullOrWhiteSpace(id.Text) || id.Text.Length < 4)
             {
                 SetErrorLabel("ID must be longer than 4 characters.");
                 return;
             }
-            if (password.Text.Length < 4 || passwordRepeat.Text.Length < 4)
+            if (string.IsNullOrWhiteSpace(password.Text) || string.IsNullOrWhiteSpace(passwordRepeat.Text) || password.Text.Length < 4 || passwordRepeat.Text.Length < 4)
             {
 #if !DEBUG
                 SetErrorLabel("Password must be longer than 12 characters.");
