@@ -4,6 +4,7 @@ using Keeper.Server.Database;
 using Keeper.Server.Database.Models;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using Org.BouncyCastle.Asn1;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
@@ -11,18 +12,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace Keeper.Server
 {
     using BCrypt.Net;
-    using Org.BouncyCastle.Asn1;
-    using System.Threading.Tasks;
+    using Serilog.Core;
 
     public class Server : IDisposable
     {
         public static Server Instance { get; private set; }
 
-        public ILogger Logger = Log.ForContext(Serilog.Core.Constants.SourceContextPropertyName, nameof(Server));
+        public ILogger Logger = Log.ForContext(Constants.SourceContextPropertyName, nameof(Server));
 
         private readonly EventBasedNetListener _listener = new EventBasedNetListener();
         private readonly NetManager _netManager;
@@ -48,6 +49,26 @@ namespace Keeper.Server
             _listener.PeerConnectedEvent += Listener_PeerConnectedEvent;
             _listener.NetworkReceiveEvent += Listener_NetworkReceiveEvent;
             _listener.PeerDisconnectedEvent += Listener_PeerDisconnectedEvent;
+        }
+
+        public static void Initialize()
+        {
+            if (Instance != null)
+                throw new InvalidOperationException("Server is already initialized");
+
+            Instance = new Server();
+        }
+
+        public void Listen(IPEndPoint endPoint)
+        {
+            _netManager.Start(endPoint.Address, IPAddress.IPv6Loopback, endPoint.Port);
+
+            Logger.Information("Server is working on {0}", endPoint);
+        }
+
+        private void Stop()
+        {
+            _netManager.Stop();
         }
 
         private void Listener_PeerConnectedEvent(NetPeer peer)
@@ -279,32 +300,14 @@ namespace Keeper.Server
             }
         }
 
-        public static void Initialize()
-        {
-            if (Instance != null)
-                throw new InvalidOperationException("Server is already initialized");
-
-            Instance = new Server();
-        }
-
-        public void Listen(IPEndPoint endPoint)
-        {
-            _netManager.Start(endPoint.Address, IPAddress.IPv6Loopback, endPoint.Port);
-
-            Logger.Information("Server is working on {0}", endPoint);
-        }
-
-        private void Stop()
-        {
-            _netManager.Stop();
-        }
-
         public void Dispose()
         {
             Stop();
 
             RSA?.Dispose();
             RSA = null;
+
+            Instance = null;
         }
     }
 }

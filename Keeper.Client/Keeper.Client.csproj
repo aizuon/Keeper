@@ -11,9 +11,9 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{2EB6F671-05AD-494B-9F3B-AB8DEA1452EF}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Keeper.Client</RootNamespace>
-    <AssemblyName>Keeper.Client</AssemblyName>
+    <AssemblyName>Client</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -45,6 +45,9 @@
     <NoWarn>CA2007;CS1998;CA1028;CA1031;CA1032;CA1040;CA1051;CA1062;CA1303;CA1304;CA1305;CA1307;CA1707;CA1710;CA1716;CA1720;CA1815;CA1819;CA2208;CA2211;CA2214;CA2225;CS0162;CS0660;CS0661;NU1701</NoWarn>
     <WarningsAsErrors>NU1605</WarningsAsErrors>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="BouncyCastle.Crypto, Version=1.8.6.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
       <HintPath>..\packages\Portable.BouncyCastle.1.8.6.7\lib\net40\BouncyCastle.Crypto.dll</HintPath>
@@ -54,6 +57,18 @@
     </Reference>
     <Reference Include="LiteNetLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\LiteNetLib.0.9.3.2\lib\net35\LiteNetLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.2.10.0\lib\net46\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.Async, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Sinks.Async.1.4.0\lib\net461\Serilog.Sinks.Async.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.Console, Version=3.1.1.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Sinks.Console.3.1.1\lib\net45\Serilog.Sinks.Console.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.File, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Sinks.File.4.1.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

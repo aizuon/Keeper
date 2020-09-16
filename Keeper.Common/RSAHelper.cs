@@ -1,11 +1,220 @@
-﻿using System;
+﻿using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.OpenSsl;
+using Org.BouncyCastle.Security;
+using System;
 using System.IO;
 using System.Security.Cryptography;
 
 namespace Keeper.Common
 {
-    public static class RSAHelper //https://gist.github.com/beginor/0d0acd7304c0e1d98d89e687aa8322e1
+    public static class RSAHelper
     {
+        public static RSAParameters GetPrivateKeyParams(string pem)
+        {
+            var pr = new PemReader(new StringReader(pem));
+            var KeyPair = (AsymmetricCipherKeyPair)pr.ReadObject();
+            var rsaParams = DotNetUtilities.ToRSAParameters((RsaPrivateCrtKeyParameters)KeyPair.Private);
+
+            return rsaParams;
+        }
+
+        public static RSAParameters GetPublicKeyParams(string pem)
+        {
+            var pr = new PemReader(new StringReader(pem));
+            var publicKey = (AsymmetricKeyParameter)pr.ReadObject();
+            var rsaParams = DotNetUtilities.ToRSAParameters((RsaKeyParameters)publicKey);
+
+            return rsaParams;
+        }
+
+        public static RSACryptoServiceProvider ImportPrivateKey(string pem)
+        {
+            var rsaParams = GetPrivateKeyParams(pem);
+
+            var csp = new RSACryptoServiceProvider();
+            csp.ImportParameters(rsaParams);
+            return csp;
+        }
+
+        public static RSACryptoServiceProvider ImportPublicKey(string pem)
+        {
+            var rsaParams = GetPublicKeyParams(pem);
+
+            var csp = new RSACryptoServiceProvider();
+            csp.ImportParameters(rsaParams);
+            return csp;
+        }
+
+        public static string ExportPrivateKey(RSACryptoServiceProvider csp)
+        {
+            using (var outputStream = new StringWriter())
+            {
+                if (csp.PublicOnly)
+                    throw new ArgumentException("CSP does not contain a private key", nameof(csp));
+                var parameters = csp.ExportParameters(true);
+                using (var stream = new MemoryStream())
+                {
+                    using (var writer = new BinaryWriter(stream))
+                    {
+                        writer.Write((byte)0x30);
+                        using (var innerStream = new MemoryStream())
+                        {
+                            using (var innerWriter = new BinaryWriter(innerStream))
+                            {
+                                EncodeIntegerBigEndian(innerWriter, new byte[] { 0x00 });
+                                EncodeIntegerBigEndian(innerWriter, parameters.Modulus);
+                                EncodeIntegerBigEndian(innerWriter, parameters.Exponent);
+                                EncodeIntegerBigEndian(innerWriter, parameters.D);
+                                EncodeIntegerBigEndian(innerWriter, parameters.P);
+                                EncodeIntegerBigEndian(innerWriter, parameters.Q);
+                                EncodeIntegerBigEndian(innerWriter, parameters.DP);
+                                EncodeIntegerBigEndian(innerWriter, parameters.DQ);
+                                EncodeIntegerBigEndian(innerWriter, parameters.InverseQ);
+                                int length = (int)innerStream.Length;
+                                EncodeLength(writer, length);
+                                writer.Write(innerStream.GetBuffer(), 0, length);
+                            }
+                        }
+
+                        char[] base64 = Convert.ToBase64String(stream.GetBuffer(), 0, (int)stream.Length).ToCharArray();
+                        outputStream.Write("-----BEGIN RSA PRIVATE KEY-----\n");
+                        for (int i = 0; i < base64.Length; i += 64)
+                        {
+                            outputStream.Write(base64, i, Math.Min(64, base64.Length - i));
+                            outputStream.Write("\n");
+                        }
+                        outputStream.Write("-----END RSA PRIVATE KEY-----");
+                    }
+                }
+
+                return outputStream.ToString();
+            }
+        }
+
+        public static string ExportPublicKey(RSACryptoServiceProvider csp)
+        {
+            using (var outputStream = new StringWriter())
+            {
+                var parameters = csp.ExportParameters(false);
+                using (var stream = new MemoryStream())
+                {
+                    using (var writer = new BinaryWriter(stream))
+                    {
+                        writer.Write((byte)0x30);
+                        using (var innerStream = new MemoryStream())
+                        {
+                            using (var innerWriter = new BinaryWriter(innerStream))
+                            {
+                                innerWriter.Write((byte)0x30);
+                                EncodeLength(innerWriter, 13);
+                                innerWriter.Write((byte)0x06);
+                                byte[] rsaEncryptionOid = new byte[] { 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01 };
+                                EncodeLength(innerWriter, rsaEncryptionOid.Length);
+                                innerWriter.Write(rsaEncryptionOid);
+                                innerWriter.Write((byte)0x05);
+                                EncodeLength(innerWriter, 0);
+                                innerWriter.Write((byte)0x03);
+                                using (var bitStringStream = new MemoryStream())
+                                {
+                                    using (var bitStringWriter = new BinaryWriter(bitStringStream))
+                                    {
+                                        bitStringWriter.Write((byte)0x00);
+                                        bitStringWriter.Write((byte)0x30);
+                                        using (var paramsStream = new MemoryStream())
+                                        {
+                                            using (var paramsWriter = new BinaryWriter(paramsStream))
+                                            {
+                                                EncodeIntegerBigEndian(paramsWriter, parameters.Modulus);
+                                                EncodeIntegerBigEndian(paramsWriter, parameters.Exponent);
+                                                int paramsLength = (int)paramsStream.Length;
+                                                EncodeLength(bitStringWriter, paramsLength);
+                                                bitStringWriter.Write(paramsStream.GetBuffer(), 0, paramsLength);
+                                            }
+                                        }
+                                        int bitStringLength = (int)bitStringStream.Length;
+                                        EncodeLength(innerWriter, bitStringLength);
+                                        innerWriter.Write(bitStringStream.GetBuffer(), 0, bitStringLength);
+                                    }
+                                }
+                                int length = (int)innerStream.Length;
+                                EncodeLength(writer, length);
+                                writer.Write(innerStream.GetBuffer(), 0, length);
+                            }
+                        }
+
+                        char[] base64 = Convert.ToBase64String(stream.GetBuffer(), 0, (int)stream.Length).ToCharArray();
+                        outputStream.Write("-----BEGIN PUBLIC KEY-----\n");
+                        for (int i = 0; i < base64.Length; i += 64)
+                        {
+                            outputStream.Write(base64, i, Math.Min(64, base64.Length - i));
+                            outputStream.Write("\n");
+                        }
+                        outputStream.Write("-----END PUBLIC KEY-----");
+                    }
+                }
+
+                return outputStream.ToString();
+            }
+        }
+
+        private static void EncodeLength(BinaryWriter stream, int length)
+        {
+            if (length < 0)
+                throw new ArgumentOutOfRangeException(nameof(length), "Length must be non-negative");
+            if (length < 0x80)
+            {
+                stream.Write((byte)length);
+            }
+            else
+            {
+                int temp = length;
+                int bytesRequired = 0;
+                while (temp > 0)
+                {
+                    temp >>= 8;
+                    bytesRequired++;
+                }
+                stream.Write((byte)(bytesRequired | 0x80));
+                for (int i = bytesRequired - 1; i >= 0; i--)
+                {
+                    stream.Write((byte)(length >> (8 * i) & 0xff));
+                }
+            }
+        }
+
+        private static void EncodeIntegerBigEndian(BinaryWriter stream, byte[] value, bool forceUnsigned = true)
+        {
+            stream.Write((byte)0x02);
+            int prefixZeros = 0;
+            for (int i = 0; i < value.Length; i++)
+            {
+                if (value[i] != 0) break;
+                prefixZeros++;
+            }
+            if (value.Length - prefixZeros == 0)
+            {
+                EncodeLength(stream, 1);
+                stream.Write((byte)0);
+            }
+            else
+            {
+                if (forceUnsigned && value[prefixZeros] > 0x7f)
+                {
+                    EncodeLength(stream, value.Length - prefixZeros + 1);
+                    stream.Write((byte)0);
+                }
+                else
+                {
+                    EncodeLength(stream, value.Length - prefixZeros);
+                }
+                for (int i = prefixZeros; i < value.Length; i++)
+                {
+                    stream.Write(value[i]);
+                }
+            }
+        }
+
         public static RSACryptoServiceProvider CreateRsaProviderFromPrivateKey(string privateKey)
         {
             byte[] privateKeyBits = Convert.FromBase64String(privateKey);

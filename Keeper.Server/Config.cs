@@ -29,7 +29,7 @@ namespace Keeper.Server
 
         public Config()
         {
-            Listener = new IPEndPoint(IPAddress.Loopback, 28002);
+            Listener = new IPEndPoint(IPAddress.Loopback, 1337);
             MaxConnections = 10;
             ConnectionKey = string.Empty;
             PrivateKey = string.Empty;

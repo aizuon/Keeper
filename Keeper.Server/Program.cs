@@ -33,7 +33,7 @@ namespace Keeper.Server
             Logger.Information("Initializing Database...");
             DB.Initialize(Config.Instance.Database);
 
-            Logger.Information("Starting Hub Server...");
+            Logger.Information("Starting Server...");
             Server.Initialize();
             Server.Instance.Listen(Config.Instance.Listener);
 
