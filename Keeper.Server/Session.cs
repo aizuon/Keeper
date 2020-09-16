@@ -4,7 +4,6 @@ using LiteNetLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 
 namespace Keeper.Server
 {
@@ -138,7 +137,10 @@ namespace Keeper.Server
             _disposed = true;
 
             if (IsConnected)
+            {
+                Peer.Flush();
                 Peer.Disconnect();
+            }
         }
     }
 }

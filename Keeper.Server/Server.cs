@@ -208,6 +208,7 @@ namespace Keeper.Server
                 if (user == null)
                 {
                     session.Send_LoginAck(LoginResult.UsernameDoesntExist);
+                    session.Dispose();
                     return;
                 }
 
@@ -215,6 +216,7 @@ namespace Keeper.Server
                 {
                     Logger.Information("Wrong password for {0} from {1}", username, session.Peer.EndPoint);
                     session.Send_LoginAck(LoginResult.WrongPassword);
+                    session.Dispose();
                     return;
                 }
 
@@ -225,7 +227,7 @@ namespace Keeper.Server
             }
         }
 
-        private void Handle_RegisterReq(Session session, string username, string hashedPassword)
+        private async Task Handle_RegisterReq(Session session, string username, string hashedPassword)
         {
             using (var db = DB.Open())
             {
@@ -237,6 +239,7 @@ namespace Keeper.Server
                 if (user != null)
                 {
                     session.Send_RegisterAck(RegisterResult.UsernameTaken);
+                    session.Dispose();
                     return;
                 }
 
@@ -244,7 +247,10 @@ namespace Keeper.Server
 
                 user.password = BCrypt.HashPassword(hashedPassword, 10);
 
+                db.InsertAsync(user);
+
                 session.Send_RegisterAck(RegisterResult.Success);
+                session.Dispose();
             }
         }
 

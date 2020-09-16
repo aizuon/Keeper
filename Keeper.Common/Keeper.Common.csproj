@@ -63,10 +63,15 @@
     <Compile Include="Crypt.cs" />
     <Compile Include="Enrichers\ContextEnricher.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Extensions\ExceptionExtensions.cs" />
     <Compile Include="Opcode.cs" />
     <Compile Include="Events.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RSAHelper.cs" />
+    <Compile Include="Threading\Tasks\AsyncManualResetEvent.cs" />
+    <Compile Include="Threading\Tasks\CancellationTokenExtensions.cs" />
+    <Compile Include="Threading\Tasks\TaskCompletionSource.cs" />
+    <Compile Include="Threading\Tasks\TaskExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

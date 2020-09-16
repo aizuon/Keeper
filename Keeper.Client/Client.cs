@@ -1,4 +1,5 @@
 ﻿using Keeper.Common;
+using Keeper.Common.Threading.Tasks;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Serilog;
@@ -9,6 +10,7 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Keeper.Client
 {
@@ -28,7 +30,10 @@ namespace Keeper.Client
         private RSACryptoServiceProvider RSA;
         private static RSACryptoServiceProvider RSA_Password;
 
+        public List<AccountInfo> Accounts;
+
         private Crypt Crypt;
+        public AsyncManualResetEvent KeyExchangeEvent = new AsyncManualResetEvent();
 
         private readonly object _sendLock = new object();
         private readonly object _recvLock = new object();
@@ -74,7 +79,7 @@ namespace Keeper.Client
             Instance = new Client();
         }
 
-        public void Connect(IPEndPoint endPoint)
+        public async Task Connect(IPEndPoint endPoint)
         {
             Crypt = new Crypt();
             _client.Connect(endPoint, "Keeper/TEST");
@@ -85,11 +90,14 @@ namespace Keeper.Client
         private void Listener_PeerConnectedEvent(NetPeer peer)
         {
             Logger.Information("Connected to the server");
+            Send_C2SKeyExchange();
         }
 
         private void Listener_PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
         {
             Logger.Information("Disconnected from server. Reason: {0}", disconnectInfo.Reason);
+
+            KeyExchangeEvent.Reset();
         }
 
         private void Listener_NetworkReceiveEvent(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
@@ -191,17 +199,50 @@ namespace Keeper.Client
 
         private void Handle_S2CKeyExchangeSuccess()
         {
-            //TODO
+            KeyExchangeEvent.Set();
         }
 
         private void Handle_LoginAck(LoginResult result, List<AccountInfo> accounts)
         {
-            //TODO
+            switch (result)
+            {
+                case LoginResult.Success:
+                {
+                    Accounts = accounts;
+                    //TODO: move to main form
+                    break;
+                }
+
+                case LoginResult.UsernameDoesntExist:
+                {
+                    LoginForm.Instance?.Invoke(new Action(() => LoginForm.Instance.SetErrorLabel("Account doesn't exist.")));
+                    break;
+                }
+
+                case LoginResult.WrongPassword:
+                {
+                    LoginForm.Instance?.Invoke(new Action(() => LoginForm.Instance.SetErrorLabel("Wrong password.")));
+                    break;
+                }
+            }
         }
 
         private void Handle_RegisterAck(RegisterResult result)
         {
-            //TODO
+            switch (result)
+            {
+                case RegisterResult.Success:
+                {
+                    RegisterForm.Instance?.Invoke(new Action(() => RegisterForm.Instance.SetSuccessLabel("Account created.")));
+                    break;
+                }
+
+                case RegisterResult.UsernameTaken:
+                {
+                    RegisterForm.Instance?.Invoke(new Action(() => RegisterForm.Instance.SetErrorLabel("Username is already taken.")));
+                    break;
+                }
+            }
         }
 
         private void Handle_AccountAddAck(uint accountId)
@@ -218,7 +259,8 @@ namespace Keeper.Client
         {
             var message = new NetDataWriter();
 
-            message.PutBytesWithLength(Crypt.GetKey());
+            byte[] encryptedKey = RSA.Encrypt(Crypt.GetKey(), true);
+            message.PutBytesWithLength(encryptedKey);
             message.Put(Crypt.GetNonce());
 
             Send(Opcode.C2SKeyExchange, message, false);

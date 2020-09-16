@@ -63,6 +63,7 @@
             this.password.Name = "password";
             this.password.Size = new System.Drawing.Size(180, 20);
             this.password.TabIndex = 5;
+            this.password.UseSystemPasswordChar = true;
             // 
             // id
             // 
@@ -86,6 +87,7 @@
             this.passwordRepeat.Name = "passwordRepeat";
             this.passwordRepeat.Size = new System.Drawing.Size(180, 20);
             this.passwordRepeat.TabIndex = 9;
+            this.passwordRepeat.UseSystemPasswordChar = true;
             // 
             // cancel
             // 
@@ -95,6 +97,7 @@
             this.cancel.TabIndex = 11;
             this.cancel.Text = "Cancel";
             this.cancel.UseVisualStyleBackColor = true;
+            this.cancel.Click += new System.EventHandler(this.cancel_Click);
             // 
             // register
             // 
@@ -104,13 +107,14 @@
             this.register.TabIndex = 10;
             this.register.Text = "Register";
             this.register.UseVisualStyleBackColor = true;
+            this.register.Click += new System.EventHandler(this.register_Click);
             // 
             // errorLabel
             // 
-            this.errorLabel.AutoSize = true;
-            this.errorLabel.Location = new System.Drawing.Point(200, 254);
+            this.errorLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.errorLabel.Location = new System.Drawing.Point(105, 265);
             this.errorLabel.Name = "errorLabel";
-            this.errorLabel.Size = new System.Drawing.Size(0, 13);
+            this.errorLabel.Size = new System.Drawing.Size(200, 13);
             this.errorLabel.TabIndex = 12;
             this.errorLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
