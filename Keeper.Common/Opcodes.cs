@@ -7,6 +7,10 @@
         LoginReq,
         LoginAck,
         RegisterReq,
-        RegisterAck
+        RegisterAck,
+        AccountAddReq,
+        AccountAddAck,
+        AccountEditReq,
+        AccountEditAck
     }
 }

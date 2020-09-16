@@ -13,6 +13,8 @@ namespace Keeper.Server
         public readonly NetPeer Peer;
         private readonly Server owner;
 
+        public uint UserId;
+
         public Crypt Crypt;
         public RSACryptoServiceProvider RSA;
 
@@ -57,8 +59,8 @@ namespace Keeper.Server
             foreach (var account in accounts)
             {
                 message.Put(account.Name);
-                message.Put(account.ID);
-                message.Put(account.Password);
+                message.Put(account.Id);
+                message.PutBytesWithLength(Convert.FromBase64String(account.Password));
             }
 
             Send(Opcode.LoginAck, message);
@@ -71,6 +73,24 @@ namespace Keeper.Server
             message.Put((byte)result);
 
             Send(Opcode.RegisterAck, message);
+        }
+
+        public void Send_AccountAddAck(uint accountId)
+        {
+            var message = new NetDataWriter();
+
+            message.Put(accountId);
+
+            Send(Opcode.AccountAddAck, message);
+        }
+
+        public void Send_AccountEditAck(AccountEditResult result)
+        {
+            var message = new NetDataWriter();
+
+            message.Put((byte)result);
+
+            Send(Opcode.AccountEditAck, message);
         }
 
         private void Send(Opcode opcode, NetDataWriter message, bool encrypt = true, DeliveryMethod method = DeliveryMethod.ReliableOrdered)

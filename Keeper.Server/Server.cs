@@ -16,6 +16,7 @@ namespace Keeper.Server
 {
     using BCrypt.Net;
     using Org.BouncyCastle.Asn1;
+    using System.Threading.Tasks;
 
     public class Server : IDisposable
     {
@@ -137,6 +138,25 @@ namespace Keeper.Server
                     Handle_RegisterReq(session, username, hashedPassword);
                     break;
                 }
+
+                case Opcode.AccountAddReq:
+                {
+                    if (!data.TryGetString(out string accountName) || !data.TryGetString(out string accountId) || !data.TryGetBytesWithLength(out byte[] encodedPassword))
+                        return;
+
+                    Handle_AddAccountReq(session, accountName, accountId, encodedPassword);
+                    break;
+                }
+
+                case Opcode.AccountEditReq:
+                {
+                    if (!data.TryGetUInt(out uint id) ||
+                        !data.TryGetString(out string accountName) || !data.TryGetString(out string accountId) || !data.TryGetBytesWithLength(out byte[] encodedPassword))
+                        return;
+
+                    Handle_AccountEditReq(session, id, accountName, accountId, encodedPassword);
+                    break;
+                }
             }
         }
 
@@ -185,6 +205,8 @@ namespace Keeper.Server
                 session.RSA = new RSACryptoServiceProvider();
                 session.RSA.ImportParameters(publicKey);
 
+                session.UserId = user.id;
+
                 var accounts = user.Accounts.Select(a => new AccountInfo(a.account, a.account_id, a.account_password));
                 session.Send_LoginAck(LoginResult.Success, accounts);
             }
@@ -210,6 +232,50 @@ namespace Keeper.Server
                 user.password = BCrypt.HashPassword(hashedPassword, 10);
 
                 session.Send_RegisterAck(RegisterResult.Success);
+            }
+        }
+
+        private void Handle_AddAccountReq(Session session, string accountName, string accountId, byte[] encodedPassword)
+        {
+            using (var db = DB.Open())
+            {
+                var account = new AccountDto
+                {
+                    user_id = session.UserId,
+                    account = accountName,
+                    account_id = accountId
+                };
+
+                string password = Convert.ToBase64String(encodedPassword);
+                account.account_password = password;
+
+                db.Insert(account);
+
+                session.Send_AccountAddAck(account.id);
+            }
+        }
+
+        private async Task Handle_AccountEditReq(Session session, uint id, string accountName, string accountId, byte[] encodedPassword)
+        {
+            using (var db = DB.Open())
+            {
+                var account = db.Find<AccountDto>(statement => statement
+                        .Where($"{nameof(UserDto.id):C} = @id")
+                        .WithParameters(new { id })).FirstOrDefault();
+
+                if (account != null)
+                {
+                    session.Send_AccountEditAck(AccountEditResult.AccountNotFound);
+                    return;
+                }
+
+                account.account = accountName;
+                account.account_id = accountId;
+                account.account_password = Convert.ToBase64String(encodedPassword);
+
+                db.UpdateAsync(account);
+
+                session.Send_AccountEditAck(AccountEditResult.Success);
             }
         }
 
