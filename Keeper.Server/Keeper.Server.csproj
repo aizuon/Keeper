@@ -5,4 +5,15 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.0" />
+    <PackageReference Include="Dapper.FastCrud" Version="2.5.0.39" />
+    <PackageReference Include="Hjson" Version="3.0.0" />
+    <PackageReference Include="LiteNetLib" Version="0.9.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Keeper.Common\Keeper.Common.csproj" />
+  </ItemGroup>
+
 </Project>

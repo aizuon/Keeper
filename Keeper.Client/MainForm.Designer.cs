@@ -40,6 +40,7 @@
             this.password = new System.Windows.Forms.TextBox();
             this.passwordLabel = new System.Windows.Forms.Label();
             this.save = new System.Windows.Forms.Button();
+            this.addNew = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // accounts
@@ -54,7 +55,7 @@
             // welcomeLabel
             // 
             this.welcomeLabel.AutoSize = true;
-            this.welcomeLabel.Location = new System.Drawing.Point(12, 21);
+            this.welcomeLabel.Location = new System.Drawing.Point(9, 21);
             this.welcomeLabel.Name = "welcomeLabel";
             this.welcomeLabel.Size = new System.Drawing.Size(77, 13);
             this.welcomeLabel.TabIndex = 1;
@@ -80,9 +81,9 @@
             // 
             // search
             // 
-            this.search.Location = new System.Drawing.Point(15, 55);
+            this.search.Location = new System.Drawing.Point(12, 55);
             this.search.Name = "search";
-            this.search.Size = new System.Drawing.Size(357, 20);
+            this.search.Size = new System.Drawing.Size(360, 20);
             this.search.TabIndex = 4;
             // 
             // account
@@ -95,7 +96,7 @@
             // accountLabel
             // 
             this.accountLabel.AutoSize = true;
-            this.accountLabel.Location = new System.Drawing.Point(12, 428);
+            this.accountLabel.Location = new System.Drawing.Point(9, 428);
             this.accountLabel.Name = "accountLabel";
             this.accountLabel.Size = new System.Drawing.Size(47, 13);
             this.accountLabel.TabIndex = 6;
@@ -104,7 +105,7 @@
             // idLabel
             // 
             this.idLabel.AutoSize = true;
-            this.idLabel.Location = new System.Drawing.Point(12, 478);
+            this.idLabel.Location = new System.Drawing.Point(9, 478);
             this.idLabel.Name = "idLabel";
             this.idLabel.Size = new System.Drawing.Size(18, 13);
             this.idLabel.TabIndex = 7;
@@ -127,7 +128,7 @@
             // passwordLabel
             // 
             this.passwordLabel.AutoSize = true;
-            this.passwordLabel.Location = new System.Drawing.Point(12, 525);
+            this.passwordLabel.Location = new System.Drawing.Point(9, 525);
             this.passwordLabel.Name = "passwordLabel";
             this.passwordLabel.Size = new System.Drawing.Size(53, 13);
             this.passwordLabel.TabIndex = 9;
@@ -135,18 +136,28 @@
             // 
             // save
             // 
-            this.save.Location = new System.Drawing.Point(140, 575);
+            this.save.Location = new System.Drawing.Point(157, 576);
             this.save.Name = "save";
             this.save.Size = new System.Drawing.Size(75, 23);
             this.save.TabIndex = 11;
             this.save.Text = "Save";
             this.save.UseVisualStyleBackColor = true;
             // 
+            // addNew
+            // 
+            this.addNew.Location = new System.Drawing.Point(135, 16);
+            this.addNew.Name = "addNew";
+            this.addNew.Size = new System.Drawing.Size(75, 23);
+            this.addNew.TabIndex = 12;
+            this.addNew.Text = "Add New";
+            this.addNew.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(384, 601);
+            this.Controls.Add(this.addNew);
             this.Controls.Add(this.save);
             this.Controls.Add(this.password);
             this.Controls.Add(this.passwordLabel);
@@ -180,5 +191,6 @@
         private System.Windows.Forms.TextBox password;
         private System.Windows.Forms.Label passwordLabel;
         private System.Windows.Forms.Button save;
+        private System.Windows.Forms.Button addNew;
     }
 }

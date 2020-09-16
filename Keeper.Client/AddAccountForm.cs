@@ -2,9 +2,9 @@
 
 namespace Keeper.Client
 {
-    public partial class MainForm : Form
+    public partial class AddAccountForm : Form
     {
-        public MainForm()
+        public AddAccountForm()
         {
             InitializeComponent();
         }
