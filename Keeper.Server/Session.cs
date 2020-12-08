@@ -138,7 +138,7 @@ namespace Keeper.Server
 
             if (IsConnected)
             {
-                Peer.Flush();
+                //TODO: Peer.Flush() gone? check
                 Peer.Disconnect();
             }
         }
